@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FCO Staff Training Portal – 2026</title>
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --green: #16a34a;
+      --orange: #ea580c;
+      --bg: #f0f4ff;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* LOGIN */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    }
+    .login-box {
+      background: white; border-radius: 16px; padding: 48px 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 360px; text-align: center;
+    }
+    .login-box img { width: 80px; margin-bottom: 16px; }
+    .login-box h1 { font-size: 1.5rem; color: var(--blue-dark); margin-bottom: 6px; }
+    .login-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+    .login-box input {
+      width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0;
+      border-radius: 8px; font-size: 1rem; margin-bottom: 14px; outline: none;
+      transition: border-color .2s;
+    }
+    .login-box input:focus { border-color: var(--blue); }
+    .login-box button {
+      width: 100%; padding: 14px; background: var(--blue); color: white;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .login-box button:hover { background: var(--blue-dark); }
+    .login-error { color: #dc2626; font-size: 0.85rem; margin-top: 8px; display: none; }
+
+    /* MAIN */
+    #main-content { display: none; }
+    header {
+      background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+      color: white; padding: 24px 32px; text-align: center;
+    }
+    header h1 { font-size: 1.8rem; margin-bottom: 4px; }
+    header p { opacity: 0.85; font-size: 0.95rem; }
+
+    /* TOC */
+    .toc { background: white; margin: 32px auto; max-width: 900px; border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08); padding: 28px 32px; }
+    .toc h2 { color: var(--blue-dark); margin-bottom: 16px; font-size: 1.2rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin: 10px 0; }
+    .toc a { color: var(--blue); font-weight: 500; text-decoration: none; font-size: 1rem; }
+    .toc a:hover { text-decoration: underline; }
+    .toc .toc-desc { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+
+    /* VIDEOS */
+    .videos-section { max-width: 900px; margin: 0 auto 60px; padding: 0 16px; }
+    .video-card {
+      background: var(--card); border-radius: 14px; margin-bottom: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08); overflow: hidden;
+    }
+    .video-header {
+      background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+      color: white; padding: 20px 28px;
+    }
+    .video-number { font-size: 0.8rem; opacity: .75; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+    .video-header h2 { font-size: 1.3rem; margin-top: 4px; }
+    .video-body { padding: 24px 28px; }
+    .video-wrapper {
+      width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px;
+      overflow: hidden; margin-bottom: 20px;
+    }
+    .video-wrapper video { width: 100%; height: 100%; }
+    .summary { background: #f0f4ff; border-left: 4px solid var(--blue); border-radius: 0 8px 8px 0;
+      padding: 14px 18px; margin-bottom: 20px; }
+    .summary p { font-size: 0.95rem; line-height: 1.6; color: var(--text); }
+    .quiz-btn {
+      display: inline-block; padding: 13px 32px; background: var(--green);
+      color: white; border: none; border-radius: 8px; font-size: 1rem;
+      font-weight: 600; cursor: pointer; text-decoration: none; transition: background .2s;
+    }
+    .quiz-btn:hover { background: #15803d; }
+
+    /* QUIZ MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55);
+      z-index: 1000; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: white; border-radius: 16px; max-width: 640px; width: 100%;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .modal-header {
+      background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+      color: white; padding: 20px 28px; border-radius: 16px 16px 0 0;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-header h3 { font-size: 1.1rem; }
+    .modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; line-height: 1; }
+    .modal-body { padding: 28px; }
+    .question { margin-bottom: 24px; }
+    .question p { font-weight: 600; margin-bottom: 10px; font-size: 0.95rem; line-height: 1.5; }
+    .option { display: flex; align-items: flex-start; gap: 10px; margin: 8px 0; cursor: pointer; }
+    .option input { margin-top: 3px; cursor: pointer; accent-color: var(--blue); }
+    .option label { cursor: pointer; font-size: 0.92rem; line-height: 1.4; }
+    .quiz-submit {
+      width: 100%; padding: 14px; background: var(--blue); color: white;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background .2s; margin-top: 8px;
+    }
+    .quiz-submit:hover { background: var(--blue-dark); }
+
+    /* CERTIFICATE */
+    .cert-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7);
+      z-index: 2000; align-items: center; justify-content: center; padding: 16px;
+    }
+    .cert-overlay.active { display: flex; }
+    .cert-box {
+      background: white; border-radius: 16px; max-width: 620px; width: 100%;
+      padding: 48px 40px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.4);
+      border: 4px solid var(--blue);
+    }
+    .cert-box .cert-logo { font-size: 3rem; margin-bottom: 12px; }
+    .cert-box h2 { color: var(--blue-dark); font-size: 1.6rem; margin-bottom: 6px; }
+    .cert-box .cert-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+    .cert-box .cert-name { font-size: 2rem; font-weight: 700; color: var(--text); margin: 12px 0; font-style: italic; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+    .cert-box .cert-title { font-size: 1.05rem; color: var(--text); margin: 12px 0 4px; }
+    .cert-box .cert-date { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+    .cert-box .cert-org { font-weight: 700; color: var(--blue-dark); font-size: 1rem; }
+    .cert-actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+    .cert-print { padding: 12px 28px; background: var(--blue); color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+    .cert-close-btn { padding: 12px 28px; background: #e2e8f0; color: var(--text); border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+    .score-display { background: #f0fdf4; border: 2px solid var(--green); border-radius: 10px; padding: 12px; margin: 12px 0; color: var(--green); font-weight: 700; font-size: 1.1rem; }
+    .wrong-msg { background: #fef2f2; border: 2px solid #dc2626; border-radius: 10px; padding: 16px; margin-top: 12px; text-align: center; }
+    .wrong-msg p { color: #dc2626; font-weight: 600; margin-bottom: 8px; }
+    .retry-btn { padding: 10px 24px; background: var(--orange); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+    footer { text-align: center; color: var(--muted); font-size: 0.82rem; padding: 32px 16px; }
+
+    @media (max-width: 600px) {
+      .login-box { padding: 32px 24px; }
+      .video-header, .video-body { padding: 16px 20px; }
+      .modal-body { padding: 20px; }
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      .cert-box, .cert-box * { visibility: visible; }
+      .cert-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+      .cert-actions { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div style="font-size:3rem;margin-bottom:8px">🏫</div>
+    <h1>FCO Staff Training</h1>
+    <p>For Children Only – 2026 Training Portal</p>
+    <input type="text" id="login-user" placeholder="Username" autocomplete="username" />
+    <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password" />
+    <button onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-error">Incorrect username or password.</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main-content">
+  <header>
+    <h1>🏫 FCO Staff Training Portal</h1>
+    <p>For Children Only · February 2026 Training Day · Complete all videos &amp; quizzes to earn your certificate</p>
+  </header>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <h2>📋 Table of Contents</h2>
+    <ol>
+      <li>
+        <a href="#video1">Positive &amp; Supportive Caregiver Child Interactions</a>
+        <div class="toc-desc">Age-appropriate interactions, TRS Category 2, emotional regulation strategies</div>
+      </li>
+      <li>
+        <a href="#video2">Play-Based Learning: Let's Make Learning Fun</a>
+        <div class="toc-desc">Child-led exploration, hands-on activities, curriculum integration</div>
+      </li>
+      <li>
+        <a href="#video3">Effective Communication with Parents</a>
+        <div class="toc-desc">Building trust, difficult conversations, ProCare app, TRS communication requirements</div>
+      </li>
+      <li>
+        <a href="#video4">Food Program Training (CACFP)</a>
+        <div class="toc-desc">Meal patterns, BLP meal counts, record keeping, food components, compliance</div>
+      </li>
+      <li>
+        <a href="#video5">Supporting Children of All Abilities</a>
+        <div class="toc-desc">Speech/language development milestones, therapy services, disability awareness</div>
+      </li>
+      <li>
+        <a href="#video6">Tech Training: ChildcareEd Continuing Education</a>
+        <div class="toc-desc">How to log into ChildcareEd, request training credits, state requirements</div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- VIDEOS -->
+  <div class="videos-section">
+
+    <!-- VIDEO 1 -->
+    <div class="video-card" id="video1">
+      <div class="video-header">
+        <div class="video-number">Training 1 of 6</div>
+        <h2>Positive &amp; Supportive Caregiver Child Interactions</h2>
+      </div>
+      <div class="video-body">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="videos/Positive and Supportive Caregiver Instructions - Feb16-26.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="summary">
+          <p>This training focuses on developmentally appropriate interactions for each age group — from infants to school-age children. Led by Crystal, a licensed clinical social worker, it covers TRS Category 2 requirements: responding warmly to children's cues, naming emotions, guiding behavior with positive language, supporting transitions, and co-regulating children's emotions. Key takeaways include age-specific strategies (narrating for infants, offering two simple choices for toddlers, open-ended questions for pre-K), why staying calm as a teacher is the single biggest factor in classroom management, and how TRS evaluates <em>teacher</em> responses — not child behavior.</p>
+        </div>
+        <button class="quiz-btn" onclick="openQuiz(1)">📝 Take Quiz &amp; Earn Certificate</button>
+      </div>
+    </div>
+
+    <!-- VIDEO 2 -->
+    <div class="video-card" id="video2">
+      <div class="video-header">
+        <div class="video-number">Training 2 of 6</div>
+        <h2>Play-Based Learning: Let's Make Learning Fun</h2>
+      </div>
+      <div class="video-body">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="videos/Play Based Learning.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="summary">
+          <p>Presented by Kelsey from Friendswood, this session explains why play is the most powerful way children learn. Play-based learning is child-initiated and teacher-guided, and supports brain development, language growth, social-emotional skills, and physical coordination. Types of play include free play, sensory play, dramatic play, and cooperative play. Practical ideas include sensory bags, laminated reusable activity sheets, learning centers, and weekly lesson plans. Key stat: children learn through play after 20 repetitions vs. 400 for textbook-style learning. Teachers are encouraged to use TikTok, ChatGPT, and Google for creative, themed activity ideas — and to document everything in ProCare!</p>
+        </div>
+        <button class="quiz-btn" onclick="openQuiz(2)">📝 Take Quiz &amp; Earn Certificate</button>
+      </div>
+    </div>
+
+    <!-- VIDEO 3 -->
+    <div class="video-card" id="video3">
+      <div class="video-header">
+        <div class="video-number">Training 3 of 6</div>
+        <h2>Effective Communication with Parents</h2>
+      </div>
+      <div class="video-body">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="videos/Effective Communication.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="summary">
+          <p>Presented by Miss Dawn, this training covers how to build strong, trust-based relationships with parents. Core strategies include active listening, giving regular updates through ProCare, using the "sandwich method" (positive → concern → positive), being transparent and honest while remaining empathetic, and using "we/us" language to foster teamwork. For difficult conversations, always include a director or neutral third party. TRS places huge emphasis on <em>individual, specific</em> written communication with parents — not just group posts. Teachers should never share personal phone numbers, and should always have a director review sensitive messages before sending.</p>
+        </div>
+        <button class="quiz-btn" onclick="openQuiz(3)">📝 Take Quiz &amp; Earn Certificate</button>
+      </div>
+    </div>
+
+    <!-- VIDEO 4 -->
+    <div class="video-card" id="video4">
+      <div class="video-header">
+        <div class="video-number">Training 4 of 6</div>
+        <h2>Food Program Training (CACFP)</h2>
+      </div>
+      <div class="video-body">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="videos/Food Program Training.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="summary">
+          <p>Miss Dawn walks through the Child and Adult Care Food Program (CACFP), which reimburses FCO for providing healthy meals to children who may not get nutritious food at home. All required food components <em>must be served</em> — children don't have to eat them, but they must be placed in front of each child. Lunch requires 5 components: vegetable, fruit, grain, meat/meat alternative, and milk. Snack requires 2 of 4. BLPs (meal count sheets) must be completed at the <em>point of service</em> — real time, black ink only, no corrections by teachers. Food allergy substitutions require a doctor's note. Two-percent milk is not acceptable — only whole milk (age 1), or 1%/fat-free (ages 2+).</p>
+        </div>
+        <button class="quiz-btn" onclick="openQuiz(4)">📝 Take Quiz &amp; Earn Certificate</button>
+      </div>
+    </div>
+
+    <!-- VIDEO 5 -->
+    <div class="video-card" id="video5">
+      <div class="video-header">
+        <div class="video-number">Training 5 of 6</div>
+        <h2>Supporting Children of All Abilities</h2>
+      </div>
+      <div class="video-body">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="videos/Supporting Children of All Abilities.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="summary">
+          <p>Guest speaker Patricia, a licensed speech-language pathologist with 36+ years of experience, explains how to recognize developmental milestones and identify children who may need additional support. Speech impairment is closely tied to autism, and autism diagnoses have been rising dramatically since 2007. Teachers are given milestone checklists (from birth through school age) and encouraged to refer families to River Kids Therapy, which provides speech, occupational, and physical therapy directly at FCO locations. The company accepts Medicaid and most commercial insurance. OT can help with handwriting, low tone, sensory issues; PT with motor milestones like hopping, jumping, and skipping.</p>
+        </div>
+        <button class="quiz-btn" onclick="openQuiz(5)">📝 Take Quiz &amp; Earn Certificate</button>
+      </div>
+    </div>
+
+    <!-- VIDEO 6 -->
+    <div class="video-card" id="video6">
+      <div class="video-header">
+        <div class="video-number">Training 6 of 6</div>
+        <h2>Tech Training: ChildcareEd Continuing Education</h2>
+      </div>
+      <div class="video-body">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="videos/Tech Training - Logging into Childcare Ed for Continuing Education.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="summary">
+          <p>Taylor and Crystal walk through ChildcareEd.com, the new online platform for state-required continuing education. Staff use the email address linked to their Paychex account to log in (first-time users click "Forgot Password"). To request a course: find it on ChildcareEd, copy the URL, and email it to Crystal and your director — they will assign credits to your account. Total requirement is 30 training hours per year (TRS standard), which includes instructor-led training days like this one plus state-required online courses. Staff can choose elective courses based on their age group or interests. CDA certification is also available through the platform.</p>
+        </div>
+        <button class="quiz-btn" onclick="openQuiz(6)">📝 Take Quiz &amp; Earn Certificate</button>
+      </div>
+    </div>
+
+  </div>
+  <footer>© 2026 For Children Only Day School · forchildrenonlydayschool.com · Training Portal</footer>
+</div>
+
+<!-- QUIZ MODAL -->
+<div class="modal-overlay" id="quiz-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="quiz-title">Quiz</h3>
+      <button class="modal-close" onclick="closeQuiz()">✕</button>
+    </div>
+    <div class="modal-body" id="quiz-body"></div>
+  </div>
+</div>
+
+<!-- CERTIFICATE OVERLAY -->
+<div class="cert-overlay" id="cert-overlay">
+  <div class="cert-box" id="cert-box">
+    <div class="cert-logo">🎓</div>
+    <h2>Certificate of Completion</h2>
+    <div class="cert-sub">For Children Only Day School · 2026 Training Day</div>
+    <div class="score-display" id="cert-score"></div>
+    <div class="cert-name" id="cert-name-display">Staff Member</div>
+    <div class="cert-title" id="cert-title-display"></div>
+    <div class="cert-date" id="cert-date-display"></div>
+    <div class="cert-org">For Children Only Day School</div>
+    <div class="cert-actions">
+      <button class="cert-print" onclick="window.print()">🖨️ Print Certificate</button>
+      <button class="cert-close-btn" onclick="closeCert()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────── AUTH ────────
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim().toLowerCase();
+  const p = document.getElementById('login-pass').value.trim();
+  const err = document.getElementById('login-error');
+  if ((u === 'fcostaff' || u === 'staff') && p === 'FCO2026') {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    err.style.display = 'none';
+  } else {
+    err.style.display = 'block';
+  }
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') doLogin();
+});
+
+// ──────── QUIZ DATA ────────
+const quizzes = {
+  1: {
+    title: "Quiz: Positive & Supportive Caregiver Child Interactions",
+    questions: [
+      {
+        q: "When TRS evaluates your classroom, what are they primarily looking at?",
+        options: ["How well the children behave", "How the teacher responds to children", "How clean the classroom is", "How many activities are planned"],
+        answer: 1
+      },
+      {
+        q: "When a one-year-old is upset, what is the best first step?",
+        options: ["Ignore it and wait for them to calm down", "Name the emotion — 'It looks like you feel sad'", "Send them to another classroom", "Raise your voice to get their attention"],
+        answer: 1
+      },
+      {
+        q: "What is 'co-regulation'?",
+        options: ["Two teachers sharing a classroom", "Helping a child calm their emotions by staying calm yourself", "A meal count method", "A TRS paperwork requirement"],
+        answer: 1
+      },
+      {
+        q: "When offering choices to a two-year-old, how many choices should you give?",
+        options: ["As many as they want", "Five or more", "Two simple choices", "None — just tell them what to do"],
+        answer: 2
+      },
+      {
+        q: "For TRS scoring purposes, what do you NOT need to worry about?",
+        options: ["Staying calm and warm with children", "Whether children have tantrums", "Using positive descriptive language", "Responding promptly to children's cues"],
+        answer: 1
+      },
+      {
+        q: "What should you say instead of 'Don't run!'?",
+        options: ["'Stop that immediately!'", "'Walk, please' or 'Show me walking feet'", "'I'll call your parents'", "Nothing — just give them a look"],
+        answer: 1
+      }
+    ]
+  },
+  2: {
+    title: "Quiz: Play-Based Learning",
+    questions: [
+      {
+        q: "What is play-based learning?",
+        options: ["Giving children free time with no teacher involvement", "Learning driven by child-initiated and teacher-guided play", "Worksheets and structured lessons only", "Screen time and tablet use"],
+        answer: 1
+      },
+      {
+        q: "How many times does a child need to do something through PLAY to learn it?",
+        options: ["400 times", "100 times", "50 times", "20 times"],
+        answer: 3
+      },
+      {
+        q: "What is one easy, reusable sensory activity idea mentioned in the training?",
+        options: ["Bubble wrap popping", "Laminated sheets inside a Ziploc bag with gel or pom-poms", "iPad drawing apps", "Coloring books"],
+        answer: 1
+      },
+      {
+        q: "What should you do when a child creates something during play-based learning?",
+        options: ["Just say 'Good job!'", "Document it with a photo in ProCare and describe what they did", "Keep it in the classroom forever", "Ask them to do it again correctly"],
+        answer: 1
+      },
+      {
+        q: "What does the 'role of the teacher' mean in a play-based classroom?",
+        options: ["Sit back and let children do whatever they want", "Observe, ask open-ended questions, and guide learning", "Only do worksheets and avoid mess", "Focus on test preparation"],
+        answer: 1
+      },
+      {
+        q: "Which of these is an example of an open-ended question during play?",
+        options: ["'Is that a castle?'", "'Are you done?'", "'What are you building and who lives inside it?'", "'Stop playing and come to circle time'"],
+        answer: 2
+      }
+    ]
+  },
+  3: {
+    title: "Quiz: Effective Communication with Parents",
+    questions: [
+      {
+        q: "What is the 'sandwich method' for talking to parents?",
+        options: ["Start with a complaint, add praise, end with a complaint", "Start positive, share your concern in the middle, end positive", "Share all concerns first, then say something nice", "Say whatever is on your mind"],
+        answer: 1
+      },
+      {
+        q: "When should you give parents your personal phone number?",
+        options: ["When they ask nicely", "When it's an emergency", "Never — always use ProCare or school channels", "When you become close friends"],
+        answer: 2
+      },
+      {
+        q: "What pronouns should you use when talking with parents to build teamwork?",
+        options: ["'You' and 'your child'", "'They' and 'them'", "'We' and 'us'", "'I' and 'me'"],
+        answer: 2
+      },
+      {
+        q: "What does TRS look for MORE than pictures in parent communication?",
+        options: ["Group posts with lots of emoji", "Individual written notes and descriptions", "Videos only", "Monthly newsletters"],
+        answer: 1
+      },
+      {
+        q: "For difficult conversations with a parent, who should be involved?",
+        options: ["Only the teacher and the parent", "The teacher, director, and a neutral third party", "Only the director", "The whole staff team"],
+        answer: 1
+      },
+      {
+        q: "Before sending a sensitive message through ProCare, what should you do?",
+        options: ["Send it quickly before you overthink it", "Have your director or assistant director review it first", "Post it on social media instead", "Wait until next week"],
+        answer: 1
+      }
+    ]
+  },
+  4: {
+    title: "Quiz: Food Program Training (CACFP)",
+    questions: [
+      {
+        q: "What does CACFP stand for?",
+        options: ["Child and Adult Care Food Program", "Childcare Audit Compliance and Food Protocol", "Child Activity Curriculum and Food Plan", "Care and Compliance Food Program"],
+        answer: 0
+      },
+      {
+        q: "If a child refuses to eat their green beans at lunch, what do you do?",
+        options: ["Remove them from the plate", "Mark them absent for that meal", "Keep all food components on the plate — they must be served even if not eaten", "Give them an alternative food"],
+        answer: 2
+      },
+      {
+        q: "What type of milk must be served to children ages 2 and older?",
+        options: ["Whole milk", "Two-percent milk", "One-percent or fat-free skim milk", "Any milk available in the store"],
+        answer: 2
+      },
+      {
+        q: "When should BLPs (meal counts) be completed?",
+        options: ["At the end of the day", "At the end of the week", "At the point of service — when the children are eating", "Whenever is convenient"],
+        answer: 2
+      },
+      {
+        q: "How many food components are required at LUNCH?",
+        options: ["2", "3", "4", "5"],
+        answer: 3
+      },
+      {
+        q: "What ink color must teachers use on roll sheets and BLPs?",
+        options: ["Red ink only", "Any color is fine", "Black ink only", "Blue ink preferred"],
+        answer: 2
+      }
+    ]
+  },
+  5: {
+    title: "Quiz: Supporting Children of All Abilities",
+    questions: [
+      {
+        q: "What organization is the national standard for speech and language development milestones?",
+        options: ["CDC", "ASHA (American Speech and Hearing Association)", "TRS (Texas Rising Star)", "AAP (American Academy of Pediatrics)"],
+        answer: 1
+      },
+      {
+        q: "What therapy helps children with handwriting, low muscle tone, and sensory issues?",
+        options: ["Physical therapy (PT)", "Speech therapy (ST)", "Occupational therapy (OT)", "Behavioral therapy"],
+        answer: 2
+      },
+      {
+        q: "Which insurance does River Kids Therapy currently have a temporary pause with?",
+        options: ["Medicaid", "TRICARE", "Blue Cross Blue Shield", "Aetna"],
+        answer: 2
+      },
+      {
+        q: "What has been dramatically increasing since 2007, according to the training?",
+        options: ["Food allergies", "Autism diagnoses", "Speech delays due to screens", "Physical therapy referrals"],
+        answer: 1
+      },
+      {
+        q: "Where does River Kids Therapy provide services?",
+        options: ["Only in their clinic", "Only at hospitals", "At homes or daycare/school locations", "Only on weekends"],
+        answer: 2
+      },
+      {
+        q: "What should you do if you notice a child may need speech or therapy services?",
+        options: ["Wait and see for a year", "Diagnose the child yourself", "Refer the family to River Kids using the QR code card or your director", "Keep it private"],
+        answer: 2
+      }
+    ]
+  },
+  6: {
+    title: "Quiz: Tech Training – ChildcareEd",
+    questions: [
+      {
+        q: "What email address should you use to log into ChildcareEd?",
+        options: ["Your personal Gmail", "Your school's general email", "The email address linked to your Paychex account", "Any email you prefer"],
+        answer: 2
+      },
+      {
+        q: "If it's your first time logging into ChildcareEd, what do you do?",
+        options: ["Create a brand new account", "Call Crystal to set it up", "Click 'Forgot Password' to set your password", "Use the username 'FCOstaff'"],
+        answer: 2
+      },
+      {
+        q: "How do you request a specific online course from ChildcareEd?",
+        options: ["Just enroll yourself and start it", "Copy the course URL and email it to Crystal and your director", "Ask a coworker to sign you up", "Print it out and bring it to the office"],
+        answer: 1
+      },
+      {
+        q: "How many total training hours does TRS require per year?",
+        options: ["10 hours", "20 hours", "24 hours", "30 hours"],
+        answer: 3
+      },
+      {
+        q: "What is available through ChildcareEd for staff who want to advance their career?",
+        options: ["A college degree", "CDA (Child Development Associate) certification", "A director's license", "A Texas teacher certification"],
+        answer: 1
+      },
+      {
+        q: "What is one nice thing about ChildcareEd compared to Tim the Trainer?",
+        options: ["It's always free with no credits needed", "There's a much wider variety of courses you can choose based on your interests and age group", "You only have to do it once ever", "It counts for more hours automatically"],
+        answer: 1
+      }
+    ]
+  }
+};
+
+const videoTitles = {
+  1: "Positive & Supportive Caregiver Child Interactions",
+  2: "Play-Based Learning: Let's Make Learning Fun",
+  3: "Effective Communication with Parents",
+  4: "Food Program Training (CACFP)",
+  5: "Supporting Children of All Abilities",
+  6: "Tech Training: ChildcareEd Continuing Education"
+};
+
+let currentQuiz = null;
+
+function openQuiz(num) {
+  currentQuiz = num;
+  const q = quizzes[num];
+  document.getElementById('quiz-title').textContent = q.title;
+  let html = `<p style="margin-bottom:20px;color:var(--muted);font-size:.9rem">Answer all 6 questions. You need to answer correctly to earn your certificate. Don't worry — it's easy! 😊</p>`;
+  q.questions.forEach((question, i) => {
+    html += `<div class="question">
+      <p>${i + 1}. ${question.q}</p>`;
+    question.options.forEach((opt, j) => {
+      html += `<div class="option">
+        <input type="radio" name="q${i}" id="q${i}o${j}" value="${j}">
+        <label for="q${i}o${j}">${opt}</label>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  html += `<input type="text" id="staff-name" placeholder="Your Full Name (for certificate)" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:1rem;margin-bottom:14px;outline:none;" />`;
+  html += `<button class="quiz-submit" onclick="submitQuiz(${num})">Submit Quiz</button>`;
+  html += `<div id="quiz-result"></div>`;
+  document.getElementById('quiz-body').innerHTML = html;
+  document.getElementById('quiz-modal').classList.add('active');
+}
+
+function closeQuiz() {
+  document.getElementById('quiz-modal').classList.remove('active');
+}
+
+function submitQuiz(num) {
+  const q = quizzes[num];
+  let score = 0;
+  let allAnswered = true;
+  q.questions.forEach((question, i) => {
+    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+    if (!sel) { allAnswered = false; return; }
+    if (parseInt(sel.value) === question.answer) score++;
+  });
+  if (!allAnswered) {
+    document.getElementById('quiz-result').innerHTML = `<div style="color:#dc2626;margin-top:12px;font-weight:600">⚠️ Please answer all 6 questions before submitting.</div>`;
+    return;
+  }
+  const name = document.getElementById('staff-name').value.trim();
+  if (!name) {
+    document.getElementById('quiz-result').innerHTML = `<div style="color:#dc2626;margin-top:12px;font-weight:600">⚠️ Please enter your name for the certificate.</div>`;
+    return;
+  }
+  if (score >= 4) {
+    closeQuiz();
+    showCertificate(name, num, score);
+  } else {
+    document.getElementById('quiz-result').innerHTML = `
+      <div class="wrong-msg">
+        <p>You scored ${score}/6. Please review the video and try again! You need at least 4 correct.</p>
+        <button class="retry-btn" onclick="openQuiz(${num})">🔄 Retry Quiz</button>
+      </div>`;
+  }
+}
+
+function showCertificate(name, num, score) {
+  document.getElementById('cert-name-display').textContent = name;
+  document.getElementById('cert-title-display').textContent = `has successfully completed: ${videoTitles[num]}`;
+  document.getElementById('cert-score').textContent = `Score: ${score}/6 — ${score === 6 ? '🌟 Perfect Score!' : '✅ Passed'}`;
+  const d = new Date();
+  document.getElementById('cert-date-display').textContent = `Completed on ${d.toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}`;
+  document.getElementById('cert-overlay').classList.add('active');
+}
+
+function closeCert() {
+  document.getElementById('cert-overlay').classList.remove('active');
+}
+</script>
+</body>
+</html>
